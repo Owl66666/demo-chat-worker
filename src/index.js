@@ -1,57 +1,46 @@
 export default {
   async fetch(request, env) {
-
-    // ===== 1️⃣ 处理 CORS 预检 =====
+    // 预检请求（CORS）
     if (request.method === "OPTIONS") {
       return new Response(null, {
-        status: 204,
         headers: {
           "Access-Control-Allow-Origin": "*",
           "Access-Control-Allow-Methods": "POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type"
-        }
-      })
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
     }
 
-    // ===== 2️⃣ 只允许 POST =====
     if (request.method !== "POST") {
-      return new Response("Method Not Allowed", {
-        status: 405,
-        headers: {
-          "Access-Control-Allow-Origin": "*"
-        }
-      })
+      return new Response("Method Not Allowed", { status: 405 });
     }
 
-    // ===== 3️⃣ 读取网页发来的数据 =====
-    const { message } = await request.json()
+    const { message } = await request.json();
 
-    // ===== 4️⃣ 调用 DeepSeek =====
-    const resp = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.DEEPSEEK_API_KEY}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: "你是一个网页里的聊天助手" },
-          { role: "user", content: message }
-        ]
-      })
-    })
-
-    const data = await resp.json()
-
-    // ===== 5️⃣ 返回给网页 =====
-    return new Response(JSON.stringify({
-      reply: data.choices[0].message.content
-    }), {
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+    const upstream = await fetch(
+      "https://api.deepseek.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.DEEPSEEK_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          stream: true,
+          messages: [
+            { role: "system", content: "你是一个网页里的聊天助手" },
+            { role: "user", content: message },
+          ],
+        }),
       }
-    })
-  }
-}
+    );
+
+    return new Response(upstream.body, {
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  },
+};
