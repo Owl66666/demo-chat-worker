@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env) {
-    // 预检请求（CORS）
+    // CORS 预检
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -38,7 +38,9 @@ export default {
 
     return new Response(upstream.body, {
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive",
         "Access-Control-Allow-Origin": "*",
       },
     });
