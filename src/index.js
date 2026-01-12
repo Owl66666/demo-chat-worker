@@ -42,16 +42,11 @@ export default {
       })
     })
 
-    const data = await resp.json()
-
-    // ===== 5️⃣ 返回给网页 =====
-    return new Response(JSON.stringify({
-      reply: data.choices[0].message.content
-    }), {
+    return new Response(upstream.body, {
       headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Content-Type": "text/plain; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
       }
-    })
+    });
   }
 }
