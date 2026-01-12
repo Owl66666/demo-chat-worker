@@ -1,11 +1,32 @@
 export default {
   async fetch(request, env) {
-    if (request.method !== "POST") {
-      return new Response("Method Not Allowed", { status: 405 })
+
+    // ===== 1️⃣ 处理 CORS 预检 =====
+    if (request.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type"
+        }
+      })
     }
 
+    // ===== 2️⃣ 只允许 POST =====
+    if (request.method !== "POST") {
+      return new Response("Method Not Allowed", {
+        status: 405,
+        headers: {
+          "Access-Control-Allow-Origin": "*"
+        }
+      })
+    }
+
+    // ===== 3️⃣ 读取网页发来的数据 =====
     const { message } = await request.json()
 
+    // ===== 4️⃣ 调用 DeepSeek =====
     const resp = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -23,6 +44,7 @@ export default {
 
     const data = await resp.json()
 
+    // ===== 5️⃣ 返回给网页 =====
     return new Response(JSON.stringify({
       reply: data.choices[0].message.content
     }), {
