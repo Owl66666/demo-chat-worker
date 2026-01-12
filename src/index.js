@@ -36,17 +36,22 @@ export default {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: "你是一个网页里的聊天助手, 回答的内容尽可能简短, 以便于快速回答" },
+          { role: "system", content: "你是一个网页里的聊天助手" },
           { role: "user", content: message }
         ]
       })
     })
 
-    return new Response(upstream.body, {
+    const data = await resp.json()
+
+    // ===== 5️⃣ 返回给网页 =====
+    return new Response(JSON.stringify({
+      reply: data.choices[0].message.content
+    }), {
       headers: {
-        "Content-Type": "text/plain; charset=utf-8",
-        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
       }
-    });
+    })
   }
 }
