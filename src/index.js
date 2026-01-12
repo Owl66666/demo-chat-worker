@@ -36,7 +36,7 @@ export default {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: "你是一个网页里的聊天助手" },
+          { role: "system", content: "你是一个网页里的聊天助手, 回答的内容尽可能简短, 以便于快速回答" },
           { role: "user", content: message }
         ]
       })
